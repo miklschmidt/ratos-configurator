@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SRC_DIR=$(realpath "$SCRIPT_DIR/..")
 report_status()
 {
     echo -e "\n\n###### $1"
