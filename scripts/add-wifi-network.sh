@@ -4,7 +4,7 @@ if [ ! "$EUID" -eq 0 ]; then
 	echo "This script must run as root"
 	exit -1
 fi
-NETWORK=$(sh -c "wpa_passphrase '$1' '$2' >> /etc/wpa_supplicant/wpa_supplicant.conf")
+NETWORK=$(sh -c "wpa_passphrase '$1' '$2'")
 cat << __EOF > /etc/wpa_supplicant/wpa_supplicant.conf
 # Use this file to configure your wifi connection(s).
 #
