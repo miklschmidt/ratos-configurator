@@ -12,7 +12,7 @@ verify_ready()
 
 disable_telemetry()
 {
-    npx next telemetry disable --yes
+    npx --yes -- next telemetry disable
 }
 
 install_service()
