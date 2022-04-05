@@ -18,7 +18,7 @@ disable_telemetry()
 install_service()
 {
         # Create systemd service file
-    SERVICE_FILE="${SYSTEMDDIR}/ratos-configurator.service"
+    SERVICE_FILE="/etc/systemd/system/ratos-configurator.service"
     [ -f $SERVICE_FILE ] && return
     report_status "Installing RatOS system start script..."
     sudo groupadd -f ratos-configurator
