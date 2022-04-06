@@ -42,15 +42,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 						res.status(200).json({ result: 'error', type: 'UnknownError', data: { message: 'failed to add network' } }),
 					);
 				}
-				if (stdout.indexOf('Wifi failed to connect, falling back to Hotspot.') > -1) {
-					return reject(
-						res.status(200).json({
-							result: 'error',
-							type: 'PasswordError',
-							data: { message: 'failed to join network, password incorrect, please try again' },
-						}),
-					);
-				}
 				resolve(res.status(200).json({ result: 'success' }));
 			},
 		);

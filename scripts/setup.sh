@@ -54,5 +54,4 @@ install_hooks
 ensure_sudo_command_whitelisting
 yarn_install
 disable_telemetry
-build
 install_service

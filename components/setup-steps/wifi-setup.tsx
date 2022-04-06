@@ -13,7 +13,6 @@ import { ScanResponseData, ScanSuccessResponse } from '../../pages/api/wifi/scan
 import { Network } from '../../helpers/iw';
 import { Modal } from '../modal';
 import getConfig from 'next/config';
-import { Button } from '../button';
 import { parseSignal } from '../../helpers/wifi';
 import { MoonrakerQueryState } from '../../hooks/useMoonraker';
 import { useRecoilValue } from 'recoil';
@@ -121,18 +120,15 @@ export const WifiSetup: React.FC<StepScreenProps> = (props) => {
 	});
 
 	const rebootAndClose = useCallback(async () => {
-		rebootMutation.mutateAsync().then(() => window.close());
+		await rebootMutation.mutateAsync();
+		window.close();
 	}, [rebootMutation]);
 
 	const content =
 		selectedNetwork && wifiMutation.isSuccess ? (
 			<Modal
-				title='Connection Successful!'
-				body={
-					'RatOS is now connected to ' +
-					selectedNetwork.ssid +
-					'! Your raspberry pi will now reboot, and rejoin your local wifi network. Click the button below to reboot the pi and close this window. You can then reconnect to your local network where http://RatOS.local/ should be available in a few minutes..'
-				}
+				title='Settings saved!'
+				body={`RatOS is now setup to connect to ${selectedNetwork.ssid}! Your raspberry pi will now reboot, and join your local wifi network. Click the button below to reboot the pi and close this window. You can then reconnect to your local network where http://RatOS.local/ should be available in a few minutes. If RatOS fails to join ${selectedNetwork.ssid}, it will recreate the "ratos" hotspot and you'll have to try again.`}
 				buttonLabel='Got it!'
 				onClick={rebootAndClose}
 			/>
@@ -150,6 +146,13 @@ export const WifiSetup: React.FC<StepScreenProps> = (props) => {
 		) : rebootMutation.isError ? (
 			<div className='mb-4 h-48'>
 				<ErrorMessage>{rebootMutation.error}</ErrorMessage>
+			</div>
+		) : rebootMutation.isLoading || rebootMutation.isSuccess ? (
+			<div className='mb-4 h-48'>
+				<div className='flex justify-center items-center mb-4 h-8'>Rebooting...</div>
+				<div className='flex justify-center items-center mb-4 h-48'>
+					<Spinner />
+				</div>
 			</div>
 		) : Object.keys(apList).length === 0 ? (
 			<div className='flex justify-center items-center mb-4 h-48'>
