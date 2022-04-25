@@ -34,13 +34,13 @@ const steps: (Step & StepScreen)[] = [
 		href: '#',
 		renderScreen: (screenProps) => <WifiSetup {...screenProps} />,
 	},
-	// {
-	// 	id: '01',
-	// 	name: 'MCU Preparation',
-	// 	description: 'Initial firmware flashing and connectivity',
-	// 	href: '#',
-	// 	renderScreen: (screenProps) => <MCUPreparation {...screenProps} />,
-	// },
+	{
+		id: '01',
+		name: 'MCU Preparation',
+		description: 'Initial firmware flashing and connectivity',
+		href: '#',
+		renderScreen: (screenProps) => <MCUPreparation {...screenProps} />,
+	},
 	// {
 	// 	id: '02',
 	// 	name: 'Printer Selection',
@@ -87,7 +87,7 @@ const Home: NextPage<IndexProps> = (props) => {
 	const router = useRouter();
 	const uriStep = router.query.step ? parseInt(router.query.step as string, 10) : null;
 	const [currentStepIndex, setCurrentStepIndex] = useState(
-		uriStep && !isNaN(uriStep) ? uriStep : props.isConnectedToWifi ? 1 : 0,
+		uriStep != null && !isNaN(uriStep) ? uriStep : props.isConnectedToWifi && steps.length > 1 ? 1 : 0,
 	);
 	const currentStepRef = useRef(currentStepIndex);
 	currentStepRef.current = currentStepIndex;

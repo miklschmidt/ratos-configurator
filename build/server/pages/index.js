@@ -5,7 +5,7 @@ exports.id = 405;
 exports.ids = [405];
 exports.modules = {
 
-/***/ 839:
+/***/ 362:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -757,14 +757,14 @@ const WifiSetup = (props)=>{
         return Promise.reject('Cannot reboot raspberry pi: No connection to moonraker');
     });
     const rebootAndClose = (0,external_react_.useCallback)(async ()=>{
-        rebootMutation.mutateAsync().then(()=>window.close()
-        );
+        await rebootMutation.mutateAsync();
+        window.close();
     }, [
         rebootMutation
     ]);
     const content = selectedNetwork && wifiMutation.isSuccess ? /*#__PURE__*/ jsx_runtime_.jsx(Modal, {
-        title: "Connection Successful!",
-        body: 'RatOS is now connected to ' + selectedNetwork.ssid + '! Your raspberry pi will now reboot, and rejoin your local wifi network. Click the button below to reboot the pi and close this window. You can then reconnect to your local network where http://RatOS.local/ should be available in a few minutes..',
+        title: "Settings saved!",
+        body: `RatOS is now setup to connect to ${selectedNetwork.ssid}! Your raspberry pi will now reboot, and join your local wifi network. Click the button below to reboot the pi and close this window. You can then reconnect to your local network where http://RatOS.local/ should be available in a few minutes. If RatOS fails to join ${selectedNetwork.ssid}, it will recreate the "ratos" hotspot and you'll have to try again.`,
         buttonLabel: "Got it!",
         onClick: rebootAndClose
     }) : selectedNetwork ? /*#__PURE__*/ jsx_runtime_.jsx(TextInput, {
@@ -782,6 +782,19 @@ const WifiSetup = (props)=>{
         children: /*#__PURE__*/ jsx_runtime_.jsx(ErrorMessage, {
             children: rebootMutation.error
         })
+    }) : rebootMutation.isLoading || rebootMutation.isSuccess ? /*#__PURE__*/ (0,jsx_runtime_.jsxs)("div", {
+        className: "mb-4 h-48",
+        children: [
+            /*#__PURE__*/ jsx_runtime_.jsx("div", {
+                className: "flex justify-center items-center mb-4 h-8",
+                children: "Rebooting..."
+            }),
+            /*#__PURE__*/ jsx_runtime_.jsx("div", {
+                className: "flex justify-center items-center mb-4 h-48",
+                children: /*#__PURE__*/ jsx_runtime_.jsx(Spinner, {
+                })
+            })
+        ]
     }) : Object.keys(apList1).length === 0 ? /*#__PURE__*/ jsx_runtime_.jsx("div", {
         className: "flex justify-center items-center mb-4 h-48",
         children: /*#__PURE__*/ jsx_runtime_.jsx(Spinner, {
@@ -1024,9 +1037,166 @@ const isConnectedToWifi = async ()=>{
     }
 };
 
+;// CONCATENATED MODULE: ./components/setup-steps/mcu-preparation.tsx
+
+
+
+
+
+
+
+
+
+
+
+const MCUPreparation = (props)=>{
+    const { 0: selectedBoard1 , 1: _setSelectedBoard  } = (0,external_react_.useState)(null);
+    const moonrakerQuery = (0,external_recoil_.useRecoilValue)(useMoonraker/* MoonrakerQueryState */.V5);
+    const boardsQuery = (0,external_react_query_namespaceObject.useQuery)('boards', async ()=>{
+        const response = await fetch(config_default()().publicRuntimeConfig.basePath + '/api/mcu/boards');
+        if (!response.ok) {
+            throw new Error('Error while retrieving board definitions');
+        }
+        const data = await response.json();
+        if ((data === null || data === void 0 ? void 0 : data.result) === 'error') {
+            throw new Error(data.data.message);
+        }
+        return data.data.boards;
+    });
+    const setBoardMutation = (0,external_react_query_namespaceObject.useMutation)(async (selectedBoard)=>{
+        if (moonrakerQuery == null) {
+            throw new Error('Moonraker not connected');
+        }
+        const response = await moonrakerQuery('server.database.post_item', {
+            namespace: 'RatOS',
+            key: 'selectedBoard',
+            value: selectedBoard
+        });
+        return response;
+    });
+    const selectedBoardQuery = (0,external_react_query_namespaceObject.useQuery)('selectedBoard', async ()=>{
+        if (moonrakerQuery == null) {
+            throw new Error('Moonraker not connected');
+        }
+        const response = await moonrakerQuery('server.database.get_item', {
+            namespace: 'RatOS',
+            key: 'selectedBoard'
+        });
+        return response;
+    });
+    const setSelectedBoard = (0,external_react_.useCallback)((selectedBoard)=>{
+        setBoardMutation.mutate(selectedBoard.board);
+        _setSelectedBoard(selectedBoard);
+    }, [
+        setBoardMutation
+    ]);
+    let rightButton = {
+        onClick: props.nextScreen,
+        label: 'Next',
+        disabled: true
+    };
+    let leftButton = {
+        onClick: props.previousScreen
+    };
+    if (selectedBoard1) {
+        rightButton = {
+            onClick: props.nextScreen,
+            label: 'Next'
+        };
+    }
+    const cards = (0,external_react_.useMemo)(()=>{
+        if (boardsQuery.isError || boardsQuery.data == null) return [];
+        return boardsQuery.data.map((b)=>({
+                board: b,
+                name: b.manufacturer + ' ' + b.name,
+                details: /*#__PURE__*/ (0,jsx_runtime_.jsxs)("span", {
+                    children: [
+                        /*#__PURE__*/ jsx_runtime_.jsx("span", {
+                            className: "font-semibold",
+                            children: "Automatic flashing:"
+                        }),
+                        " ",
+                        b.flashScript ? 'Yes' : 'No'
+                    ]
+                }),
+                right: /*#__PURE__*/ jsx_runtime_.jsx(outline_.ChipIcon, {
+                    className: "h-8 w-8 text-slate-500"
+                })
+            })
+        );
+    }, [
+        boardsQuery.isError,
+        boardsQuery.data
+    ]);
+    (0,external_react_.useEffect)(()=>{
+        const board = cards.find((c)=>{
+            var ref;
+            return c.board.serialPath === ((ref = selectedBoardQuery.data) === null || ref === void 0 ? void 0 : ref.value.serialPath);
+        });
+        _setSelectedBoard(board !== null && board !== void 0 ? board : null);
+    }, [
+        selectedBoardQuery.data,
+        cards
+    ]);
+    var ref1;
+    let content = (ref1 = renderStatus(boardsQuery)) !== null && ref1 !== void 0 ? ref1 : /*#__PURE__*/ jsx_runtime_.jsx(CardSelector, {
+        cards: cards,
+        value: selectedBoard1,
+        onSelect: setSelectedBoard
+    });
+    return(/*#__PURE__*/ (0,jsx_runtime_.jsxs)(external_react_.Fragment, {
+        children: [
+            /*#__PURE__*/ (0,jsx_runtime_.jsxs)("div", {
+                className: "p-8",
+                children: [
+                    ' ',
+                    /*#__PURE__*/ (0,jsx_runtime_.jsxs)("div", {
+                        className: "pb-5 mb-5 border-b border-gray-200",
+                        children: [
+                            /*#__PURE__*/ jsx_runtime_.jsx("h3", {
+                                className: "text-lg leading-6 font-medium text-gray-900",
+                                children: "Control board preparation"
+                            }),
+                            /*#__PURE__*/ jsx_runtime_.jsx("p", {
+                                className: "mt-2 max-w-4xl text-sm text-gray-500",
+                                children: "Pick your control board"
+                            })
+                        ]
+                    }),
+                    content
+                ]
+            }),
+            /*#__PURE__*/ jsx_runtime_.jsx(StepNavButtons, {
+                right: rightButton,
+                left: leftButton
+            })
+        ]
+    }));
+};
+const renderStatus = (query)=>{
+    if (query.isError) {
+        var ref;
+        return(/*#__PURE__*/ jsx_runtime_.jsx("div", {
+            className: "mb-4 h-48",
+            children: /*#__PURE__*/ jsx_runtime_.jsx(ErrorMessage, {
+                children: (ref = query.error) === null || ref === void 0 ? void 0 : ref.message
+            })
+        }));
+    }
+    if (query.isFetching) {
+        return(/*#__PURE__*/ jsx_runtime_.jsx("div", {
+            className: "flex justify-center items-center mb-4 h-48",
+            children: /*#__PURE__*/ jsx_runtime_.jsx(Spinner, {
+            })
+        }));
+    }
+    return null;
+};
+
 ;// CONCATENATED MODULE: external "next/router"
 const router_namespaceObject = require("next/router");
 ;// CONCATENATED MODULE: ./pages/index.tsx
+
 
 
 
@@ -1048,6 +1218,15 @@ const steps = [
         renderScreen: (screenProps)=>/*#__PURE__*/ jsx_runtime_.jsx(WifiSetup, {
                 ...screenProps
             })
+    },
+    {
+        id: '01',
+        name: 'MCU Preparation',
+        description: 'Initial firmware flashing and connectivity',
+        href: '#',
+        renderScreen: (screenProps)=>/*#__PURE__*/ jsx_runtime_.jsx(MCUPreparation, {
+                ...screenProps
+            })
     }, 
 ];
 async function getServerSideProps() {
@@ -1060,7 +1239,7 @@ async function getServerSideProps() {
 const Home = (props)=>{
     const router = (0,router_namespaceObject.useRouter)();
     const uriStep = router.query.step ? parseInt(router.query.step, 10) : null;
-    const { 0: currentStepIndex , 1: setCurrentStepIndex  } = (0,external_react_.useState)(uriStep && !isNaN(uriStep) ? uriStep : props.isConnectedToWifi ? 1 : 0);
+    const { 0: currentStepIndex , 1: setCurrentStepIndex  } = (0,external_react_.useState)(uriStep != null && !isNaN(uriStep) ? uriStep : props.isConnectedToWifi && steps.length > 1 ? 1 : 0);
     const currentStepRef = (0,external_react_.useRef)(currentStepIndex);
     currentStepRef.current = currentStepIndex;
     (0,external_react_.useEffect)(()=>{
@@ -1238,7 +1417,7 @@ module.exports = require("recoil");
 var __webpack_require__ = require("../webpack-runtime.js");
 __webpack_require__.C(exports);
 var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = __webpack_require__.X(0, [852], () => (__webpack_exec__(839)));
+var __webpack_exports__ = __webpack_require__.X(0, [852], () => (__webpack_exec__(362)));
 module.exports = __webpack_exports__;
 
 })();
